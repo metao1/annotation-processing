@@ -22,4 +22,19 @@ public class PersonBuilderUnitTest {
         assertEquals("+11912313232", mehrdad.getPhoneNumber());
     }
 
+    @Test
+    public void testUniversity() {
+        PersonBuilder.Person person = new PersonBuilder()
+                .setAddress("Munich")
+                .setAge(10)
+                .setName("Mehrdad")
+                .setPhoneNumber("+11912313232")
+                .build();
+        com.metao.annotations.UniversityBuilder.University university = new com.metao.annotations
+                .UniversityBuilder().setPerson(person).build();
+
+        assertEquals("Mehrdad", university.getPerson().getName());
+
+    }
+
 }

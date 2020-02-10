@@ -12,10 +12,7 @@ import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @SupportedAnnotationTypes("com.metao.annotation.processor.Builder")
 @SupportedSourceVersion(SourceVersion.RELEASE_11)
@@ -107,7 +104,7 @@ public class BuilderProcessor extends AbstractProcessor {
             out.print(builderSimpleClassName);
             out.println(" {");
             out.println();
-            out.print("    private final ");
+            out.print("   private final ");
             out.print(simpleClassName);
             out.print(" object = new ");
             out.print(simpleClassName);
@@ -135,8 +132,8 @@ public class BuilderProcessor extends AbstractProcessor {
                 out.print(setterMethod);
 
                 out.print("(");
-
-                out.print(element.asType());
+                String filedType = reviseFieldType(element.asType().toString());
+                out.print(filedType);
                 out.println(" value) {");
                 out.print("        object.");
                 out.print(setterMethod);
@@ -153,17 +150,18 @@ public class BuilderProcessor extends AbstractProcessor {
 
     private void createInnerClass(PrintWriter out, String className, List<Element> fields) {
         StringBuffer stringBuffer = new StringBuffer();
-        stringBuffer.append("   public class ");
+        stringBuffer.append("\tpublic class ");
         stringBuffer.append(className);
         stringBuffer.append(" {");
         stringBuffer.append("\n");
         fields.forEach(field -> {
-            stringBuffer.append("        ");
-            stringBuffer.append("private " + field.asType() + " ");
+            stringBuffer.append("\t\t");
+            String fileType = reviseFieldType(field.asType().toString());
+            stringBuffer.append("private " + fileType + " ");
             stringBuffer.append(field.getSimpleName().toString() + ";\n");
         });
 
-        stringBuffer.append("        ");
+        stringBuffer.append("\t\t");
         stringBuffer.append(className);
         stringBuffer.append("(");
         stringBuffer.append(") {}");
@@ -172,22 +170,41 @@ public class BuilderProcessor extends AbstractProcessor {
             if (field == null) {
                 return;
             }
-            stringBuffer.append("        ");
+            stringBuffer.append("\t\t");
             stringBuffer.append("private void set");
             String fieldName = field.getSimpleName().toString();
             String methodName = capitalize(fieldName);
-            stringBuffer.append(methodName + "(" + field.asType() + " " + fieldName + ") {");
-            stringBuffer.append(" this." + fieldName + "=" + fieldName + ";}\n");
-            stringBuffer.append("        ");
-            stringBuffer.append("public " + field.asType() + " get");
+            String filedType = field.asType().toString();
+            filedType = reviseFieldType(filedType);
+            stringBuffer.append(methodName).append("(").append(filedType).append(" ").append(fieldName).append(") {");
+            stringBuffer.append(" this.").append(fieldName).append("=").append(fieldName).append(";}\n");
+            stringBuffer.append("\t\t");
+            filedType = reviseFieldType(filedType);
+            stringBuffer.append("public ").append(filedType).append(" get");
             fieldName = field.getSimpleName().toString();
             methodName = capitalize(fieldName);
-            stringBuffer.append(methodName + "() {");
-            stringBuffer.append(" return this." + fieldName + ";}\n");
+            stringBuffer.append(methodName).append("() {");
+            stringBuffer.append(" return this.").append(fieldName).append(";}\n");
         });
-        stringBuffer.append("    }");
+        stringBuffer.append("\t}");
         stringBuffer.append("\n");
         out.print(stringBuffer.toString());
+    }
+
+    private String reviseFieldType(String filedType) {
+        if (!isPrimitiveType(filedType)) {
+            int lastDot = filedType.lastIndexOf('.');
+            if (lastDot > 0) {
+                String realFiledType = filedType.substring(lastDot);
+                return "com.metao.annotations" + realFiledType + "Builder" + realFiledType;
+            }
+        }
+        return filedType;
+    }
+
+    private static boolean isPrimitiveType(String type) {
+        String[] primitiveTypesArray = {"int", "java.lang.String", "short", "float", "double"};
+        return Arrays.stream(primitiveTypesArray).anyMatch(matcher -> matcher.matches(type));
     }
 
     private static String capitalize(String str) {
