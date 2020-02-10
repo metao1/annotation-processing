@@ -1,6 +1,7 @@
 package com.metao.annotation;
 
 import com.metao.annotations.PersonBuilder;
+import com.metao.annotations.StudentBuilder;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -30,11 +31,13 @@ public class PersonBuilderUnitTest {
                 .setName("Mehrdad")
                 .setPhoneNumber("+11912313232")
                 .build();
+        StudentBuilder.Student student = new StudentBuilder().setNumber(1000).setPerson(person).build();
         com.metao.annotations.UniversityBuilder.University university = new com.metao.annotations
-                .UniversityBuilder().setPerson(person).build();
+                .UniversityBuilder().setStudent(student).build();
 
-        assertEquals("Mehrdad", university.getPerson().getName());
+        assertEquals("Mehrdad", university.getStudent().getPerson().getName());
 
+        assertEquals("Mehrdad", student.getPerson().getName());
     }
 
 }
