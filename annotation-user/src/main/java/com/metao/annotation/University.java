@@ -7,5 +7,7 @@ import java.util.List;
 @Builder
 public class University {
 
-    private Student students;
+    private List<Student> students;
+
+    private List<Teacher> teachers;
 }
