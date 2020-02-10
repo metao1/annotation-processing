@@ -195,8 +195,23 @@ public class BuilderProcessor extends AbstractProcessor {
         if (!isPrimitiveType(filedType)) {
             int lastDot = filedType.lastIndexOf('.');
             if (lastDot > 0) {
-                String realFiledType = filedType.substring(lastDot);
-                return "com.metao.annotations" + realFiledType + "Builder" + realFiledType;
+                String realFiledType = filedType.substring(lastDot + 1);
+                boolean isGeneric = false;
+                if (realFiledType.contains(">")) {
+                    isGeneric = true;
+                    realFiledType = realFiledType.replace(">", "");
+                }
+                String firstFieldType = "";
+                if (filedType.contains("<")) {
+                    firstFieldType = filedType.substring(0, filedType.lastIndexOf("<") + 1);
+                }
+                return firstFieldType +
+                        "com.metao.annotations." +
+                        realFiledType +
+                        "Builder" +
+                        "." +
+                        realFiledType +
+                        (isGeneric ? ">" : "");
             }
         }
         return filedType;
